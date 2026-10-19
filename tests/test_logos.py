@@ -1,37 +1,33 @@
-from selenium.webdriver.support.ui import WebDriverWait
+import allure
 from pages.main_page import MainPage
 from pages.order_page import OrderPage
+from config.urls import Urls
 
 
-def test_logo_scooter_redirects_to_main_from_order_page(driver):
-   
-    main = MainPage(driver)
-    main.open()
-    main.click_order_top()             
+@allure.feature("Logos")
+class TestLogos:
 
-    order = OrderPage(driver)
-    order.click_logo_scooter()         
+    def test_logo_scooter_redirects_to_main_from_order_page(self, driver):
+        main = MainPage(driver)
+        main.open()
+        main.click_order_top()
 
-    WebDriverWait(driver, 10).until(
-        lambda d: d.current_url.rstrip("/") == MainPage.URL.rstrip("/")
-    )
-    assert driver.current_url.rstrip("/") == MainPage.URL.rstrip("/")
+        order = OrderPage(driver)
+        order.click_logo_scooter()
 
+        order.wait_for_url(Urls.BASE_URL)
+        assert order.get_current_url().rstrip("/") == Urls.BASE_URL.rstrip("/")
 
-def test_logo_yandex_opens_new_tab(driver):
-    main = MainPage(driver)
-    main.open()
+    def test_logo_yandex_opens_new_tab(self, driver):
+        main = MainPage(driver)
+        main.open()
 
-    initial_windows = len(driver.window_handles)
-    main.click_logo_yandex()
+        initial_windows = main.get_window_handles()
+        main.click_logo_yandex()
 
-    WebDriverWait(driver, 10).until(
-        lambda d: len(d.window_handles) > initial_windows
-    )
-    driver.switch_to.window(driver.window_handles[-1])
+        main.wait_for_new_window(len(initial_windows))
+        main.switch_to_last_window()
+        main.wait_for_real_url()
 
-    WebDriverWait(driver, 10).until(
-        lambda d: d.current_url != "about:blank"
-    )
-    
-    assert ("ya.ru" in driver.current_url) or ("dzen.ru" in driver.current_url)
+        current = main.get_current_url()
+        assert ("ya.ru" in current) or ("dzen.ru" in current)

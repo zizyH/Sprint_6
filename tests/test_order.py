@@ -1,4 +1,5 @@
 import pytest
+import allure
 from pages.main_page import MainPage
 from pages.order_page import OrderPage
 
@@ -29,23 +30,27 @@ order_data = [
 ]
 
 
-@pytest.mark.parametrize("entry", ["top", "bottom"])
-@pytest.mark.parametrize("data", order_data)
-def test_order_scooter_success(driver, entry, data):
-    main = MainPage(driver)
-    main.open()
-    if entry == "top":
-        main.click_order_top()
-    else:
-        main.click_order_bottom()
+@allure.feature("Order")
+class TestOrder:
 
-    order = OrderPage(driver)
-    order.fill_first_form(
-        data["name"], data["surname"], data["address"], data["metro"], data["phone"]
-    )
-    order.fill_second_form(
-        data["date"], data["period"], data["color"], data["comment"]
-    )
-    order.confirm_order()
+    @pytest.mark.parametrize("entry", ["top", "bottom"])
+    @pytest.mark.parametrize("data", order_data)
+    def test_order_scooter_success(self, driver, entry, data):
+        main = MainPage(driver)
+        main.open()
+        if entry == "top":
+            main.click_order_top()
+        else:
+            main.click_order_bottom()
 
-    assert "Заказ оформлен" in order.get_success_text()
+        order = OrderPage(driver)
+        order.fill_first_form(
+            data["name"], data["surname"], data["address"],
+            data["metro"], data["phone"],
+        )
+        order.fill_second_form(
+            data["date"], data["period"], data["color"], data["comment"],
+        )
+        order.confirm_order()
+
+        assert "Заказ оформлен" in order.get_success_text()
